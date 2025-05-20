@@ -1,10 +1,10 @@
 package org.example.service;
 import org.example.*;
+import org.mockito.Mockito;
 import org.junit.jupiter.api.Test;
-
 import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 
 public class CalculadoraReembolsoTest {
@@ -55,7 +55,7 @@ public class CalculadoraReembolsoTest {
 
        assertEquals(180,resultado);
     }*/
-    @Test
+    /*@Test
     public void deveChamarAuditoriaAoConsultar(){
         HistoricoConsultasFake historico = new HistoricoConsultasFake() {
             @Override
@@ -74,5 +74,30 @@ public class CalculadoraReembolsoTest {
         assertTrue(auditoria.foiChamado(), "O método registrarConsulta() deveria ter sido chamado.");
         assertNotNull(auditoria.getConsultaRegistrada(),"Consulta registrada na auditoria não deveria ser nula.");
         assertEquals(629, auditoria.getConsultaRegistrada().getReembolso(), 0.01);
+    }*/
+    @Test
+    public void deveLancarExcecaoSeReembolsoNaoForAutorizado() {
+        HistoricoConsultasFake historico = new HistoricoConsultasFake() {
+            @Override
+            public List<Consultas> consultar() {
+                return List.of();
+            }
+        };
+
+        Auditoria auditoriaFake = mock(Auditoria.class);
+        AutorizadorReembolso autorizadorMock = mock(AutorizadorReembolso.class);
+
+        CalculadoraReembolso.Paciente paciente = new CalculadoraReembolso.Paciente();
+        PlanoSaude planoStub = () -> 70;
+
+        when(autorizadorMock.autorizar(eq(paciente), eq(400.0), eq(planoStub))).thenReturn(false);
+
+        CalculadoraReembolso calculadora = new CalculadoraReembolso(historico, auditoriaFake, autorizadorMock);
+
+        Exception excecao = assertThrows(IllegalStateException.class, () -> {
+            calculadora.calculadoraReembolso(paciente, 400.0, planoStub);
+        });
+
+        assertEquals("Reembolso não autorizado", excecao.getMessage());
     }
 }

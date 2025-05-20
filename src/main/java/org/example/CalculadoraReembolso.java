@@ -3,13 +3,18 @@ package org.example;
 public class CalculadoraReembolso {
     private final HistoricoConsultas historico;
     private final Auditoria auditoria;
+    private final AutorizadorReembolso autorizador;
 
-    public CalculadoraReembolso(HistoricoConsultas historico, Auditoria auditoria) {
+    public CalculadoraReembolso(HistoricoConsultas historico, Auditoria auditoria, AutorizadorReembolso autorizador) {
         this.historico = historico;
         this.auditoria = auditoria;
+        this.autorizador = autorizador;
     }
 
     public double calculadoraReembolso(Paciente paciente, double valorConsulta, PlanoSaude plano) {
+        if (!autorizador.autorizar(paciente, valorConsulta, plano)) {
+            throw new IllegalStateException("Não autorizado o reeembolso!");
+        }
         int percentualCobertura = plano.obterPercentualCobertura();
         if  (percentualCobertura > 100 || percentualCobertura < 0) {
             throw new IllegalArgumentException("Percentual inválido");
