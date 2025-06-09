@@ -10,9 +10,9 @@ public class AuditoriaSpy implements Auditoria {
         this.metodoChamado = true;
     }
     public boolean foiChamado() {
-        return metodoChamado;
+        return this.metodoChamado;
     }
     public Consultas getConsultaRegistrada() {
-        return consultaRegistrada;
+        return this.consultaRegistrada;
     }
 }

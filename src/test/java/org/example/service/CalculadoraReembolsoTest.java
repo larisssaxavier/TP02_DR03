@@ -1,130 +1,69 @@
 package org.example.service;
 import org.example.*;
-import org.mockito.Mockito;
+import org.junit.jupiter.api.BeforeEach;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.junit.jupiter.api.Test;
-import java.util.List;
+import org.mockito.MockitoAnnotations;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 
 public class CalculadoraReembolsoTest {
-    /*@Test
-    public void calculaReembolso(){
-        CalculadoraReembolso calculadora = new CalculadoraReembolso();
-        double resultado = calculadora.calculadoraReembolso(null,650,38);
-        assertEquals(0, resultado);
-    }*/
+    @Mock
+    private AutorizadorReembolso autorizadorMock;
+    private HistoricoConsultas historicoFake;
+    private Auditoria auditoriaSpy;
 
-    /*@Test
-    public void registraConsultaNoHistorico(){
-        HistoricoConsultasFake historicoFake = new HistoricoConsultasFake() {
-            @Override
-            public List<Consultas> consultar() {
-                return List.of();
-            }
-        };
-        CalculadoraReembolso calculadora = new CalculadoraReembolso(historicoFake);
-        CalculadoraReembolso.Paciente paciente = new CalculadoraReembolso.Paciente();
+    @InjectMocks
+    private CalculadoraReembolso calculadora;
+    private CalculadoraReembolso.Paciente paciente;
 
-        calculadora.calculadoraReembolso(paciente, 360, 70);
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+        historicoFake = new HistoricoConsultasFake();
+        auditoriaSpy = new AuditoriaSpy();
+        paciente = new CalculadoraReembolso.Paciente();
+        calculadora = new CalculadoraReembolso(historicoFake, auditoriaSpy, autorizadorMock);
+    }
 
-        List<Consultas>consultas = historicoFake.listarTodas();
-        assertEquals(1, consultas.size());
+    @Test
+    void deveLimitarReembolsoAoValorMaximoQuandoAutorizado(){
+        double valorConsulta = 300.0;
+        PlanoSaude planoStub = new PlanoSaudeBasico(80);
+        when(autorizadorMock.autorizar(any(), anyDouble(),any())).thenReturn(true);
+        double resultado = calculadora.calculadoraReembolso(paciente, valorConsulta, planoStub);
+        assertEquals(150, resultado, 0.01);
+    }
+    @Test
+    void deveRetornarValorCalculadoQuandoAbaixoDoLimite(){
+        double valorConsulta = 200.0;
+        PlanoSaude planoStub = new PlanoSaudeBasico(70);
+        when(autorizadorMock.autorizar(any(), anyDouble(),any())).thenReturn(true);
+        double resultado = calculadora.calculadoraReembolso(paciente, valorConsulta, planoStub);
+        assertEquals(140, resultado, 0.01);
+    }
+    @Test
+    void deveProcessarReembolsoCompletoComLimiteEVerificarColaboradores() {
+        double valorConsulta = 300.0;
+        PlanoSaude planoStub = new PlanoSaudeStub(80);
+        double reembolsoCalculadoSemTeto = 240.0;
+        when(autorizadorMock.autorizar(any(CalculadoraReembolso.Paciente.class), anyDouble(), any(PlanoSaude.class))).thenReturn(true);
 
-        Consultas consultaRegistrada = consultas.get(0);
+        double valorRetornado = calculadora.calculadoraReembolso(paciente, valorConsulta, planoStub);
+        assertEquals(150.0, valorRetornado, 0.01, "O valor de retorno deve ser limitado pelo teto.");
+        verify(autorizadorMock, times(1)).autorizar(paciente, valorConsulta, planoStub);
 
-        assertEquals(360, consultaRegistrada.getValorConsulta());
-        assertEquals(70, consultaRegistrada.getPercentualCobertura());
-        assertEquals(252, consultaRegistrada.getReembolso());
+        assertEquals(1, historicoFake.listarTodas().size(), "Uma consulta deveria ter sido adicionada ao histórico.");
 
-    }*/
+        assertTrue(auditoriaSpy.foiChamado(), "O serviço de auditoria deveria ter sido chamado.");
 
-    /*@Test
-    public void calculaReembolsoComPlano(){
-        HistoricoConsultasFake historicoFake = new HistoricoConsultasFake() {
-            @Override
-            public List<Consultas> consultar() {
-                return List.of();
-            }
-        };
-        CalculadoraReembolso calculadora = new CalculadoraReembolso(historicoFake);
-        CalculadoraReembolso.Paciente paciente = new CalculadoraReembolso.Paciente();
-        PlanoSaude planoStub = () -> 50;
+        Consultas consultaSalva = historicoFake.listarTodas().getFirst();
+        assertNotNull(consultaSalva, "O objeto da consulta salva não pode ser nulo.");
+        assertEquals(valorConsulta, consultaSalva.getValorConsulta());
+        assertEquals(80, consultaSalva.getPercentualCobertura());
 
-        double resultado = calculadora.calculadoraReembolso(paciente, 360, planoStub);
-
-       assertEquals(180,resultado);
-    }*/
-    /*@Test
-    public void deveChamarAuditoriaAoConsultar(){
-        HistoricoConsultasFake historico = new HistoricoConsultasFake() {
-            @Override
-            public List<Consultas> consultar() {
-                return List.of();
-            }
-        };
-        AuditoriaSpy auditoria = new AuditoriaSpy();
-
-        CalculadoraReembolso calculadora = new CalculadoraReembolso(historico, auditoria);
-        CalculadoraReembolso.Paciente paciente = new CalculadoraReembolso.Paciente();
-        PlanoSaude planoStub = ()-> 74;
-
-        double resultado = calculadora.calculadoraReembolso(paciente, 850, planoStub);
-
-        assertTrue(auditoria.foiChamado(), "O método registrarConsulta() deveria ter sido chamado.");
-        assertNotNull(auditoria.getConsultaRegistrada(),"Consulta registrada na auditoria não deveria ser nula.");
-        assertEquals(629, auditoria.getConsultaRegistrada().getReembolso(), 0.01);
-    }*/
-    /*@Test
-    public void deveLancarExcecaoSeReembolsoNaoForAutorizado() {
-        HistoricoConsultasFake historico = new HistoricoConsultasFake() {
-            @Override
-            public List<Consultas> consultar() {
-                return List.of();
-            }
-        };
-
-        Auditoria auditoriaFake = mock(Auditoria.class);
-        AutorizadorReembolso autorizadorMock = mock(AutorizadorReembolso.class);
-
-        CalculadoraReembolso.Paciente paciente = new CalculadoraReembolso.Paciente();
-        PlanoSaude planoStub = () -> 70;
-
-        when(autorizadorMock.autorizar(eq(paciente), eq(400.0), eq(planoStub))).thenReturn(false);
-
-        CalculadoraReembolso calculadora = new CalculadoraReembolso(historico, auditoriaFake, autorizadorMock);
-
-        Exception excecao = assertThrows(IllegalStateException.class, () -> {
-            calculadora.calculadoraReembolso(paciente, 400.0, planoStub);
-        });
-
-        assertEquals("Reembolso não autorizado", excecao.getMessage());
-    }*/
-
-    /*private Consultas criarConsultaPadrao() {
-        CalculadoraReembolso.Paciente paciente = new CalculadoraReembolso.Paciente();
-
-        double valorConsulta = 300;
-        int percentualCobertura = 80;
-
-        double reembolsoCalculado = (valorConsulta * percentualCobertura) / 100.0;
-        return new Consultas(paciente, valorConsulta, percentualCobertura, reembolsoCalculado);
-    }*/
-    /*@Test
-    void deveAdicionarConsultaAoHistorico() {
-        HistoricoConsultas historico = new HistoricoConsultasFake();
-        Consultas consulta = criarConsultaPadrao();
-        historico.adicionar(consulta);
-        assertEquals(1, historico.listarTodas().size());
-        assertEquals(consulta, historico.listarTodas().getFirst());
-    }*/
-    /*@Test
-    void deveCalcularReembolsoComCoberturaDe100PorCento() {
-        Consultas consulta = criarConsultaPadrao();
-
-        assertEquals(350.0, consulta.getReembolso());
-        assertEquals(100, consulta.getPercentualCobertura());
-    }*/
-
-
+        assertEquals(reembolsoCalculadoSemTeto, consultaSalva.getReembolso(), 0.01, "O reembolso salvo na consulta deve ser o valor original, sem o teto.");
+    }
 }
