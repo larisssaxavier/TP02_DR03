@@ -20,12 +20,13 @@ public class CalculadoraReembolso {
             throw new IllegalArgumentException("Percentual inválido");
         }
         double reembolso = (valorConsulta * percentualCobertura) / 100;
+        double valorMaximoReembolso = 150.0;
 
         Consultas consultas = new Consultas(paciente, valorConsulta, percentualCobertura, reembolso);
         historico.adicionar(consultas);
         auditoria.resgistrarConsulta(consultas);
 
-        return reembolso;
+        return Math.min(reembolso, valorMaximoReembolso);
     }
     public static class Paciente{
     }

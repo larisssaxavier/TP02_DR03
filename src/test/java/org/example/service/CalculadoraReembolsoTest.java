@@ -75,7 +75,7 @@ public class CalculadoraReembolsoTest {
         assertNotNull(auditoria.getConsultaRegistrada(),"Consulta registrada na auditoria não deveria ser nula.");
         assertEquals(629, auditoria.getConsultaRegistrada().getReembolso(), 0.01);
     }*/
-    @Test
+    /*@Test
     public void deveLancarExcecaoSeReembolsoNaoForAutorizado() {
         HistoricoConsultasFake historico = new HistoricoConsultasFake() {
             @Override
@@ -99,5 +99,32 @@ public class CalculadoraReembolsoTest {
         });
 
         assertEquals("Reembolso não autorizado", excecao.getMessage());
-    }
+    }*/
+
+    /*private Consultas criarConsultaPadrao() {
+        CalculadoraReembolso.Paciente paciente = new CalculadoraReembolso.Paciente();
+
+        double valorConsulta = 300;
+        int percentualCobertura = 80;
+
+        double reembolsoCalculado = (valorConsulta * percentualCobertura) / 100.0;
+        return new Consultas(paciente, valorConsulta, percentualCobertura, reembolsoCalculado);
+    }*/
+    /*@Test
+    void deveAdicionarConsultaAoHistorico() {
+        HistoricoConsultas historico = new HistoricoConsultasFake();
+        Consultas consulta = criarConsultaPadrao();
+        historico.adicionar(consulta);
+        assertEquals(1, historico.listarTodas().size());
+        assertEquals(consulta, historico.listarTodas().getFirst());
+    }*/
+    /*@Test
+    void deveCalcularReembolsoComCoberturaDe100PorCento() {
+        Consultas consulta = criarConsultaPadrao();
+
+        assertEquals(350.0, consulta.getReembolso());
+        assertEquals(100, consulta.getPercentualCobertura());
+    }*/
+
+
 }

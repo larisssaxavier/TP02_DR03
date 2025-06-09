@@ -2,7 +2,7 @@ package org.example;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class HistoricoConsultasFake implements  HistoricoConsultas {
+public class HistoricoConsultasFake implements  HistoricoConsultas {
     private final List<Consultas> consultas = new ArrayList<>();
 
     @Override
@@ -11,6 +11,10 @@ public abstract class HistoricoConsultasFake implements  HistoricoConsultas {
     }
     @Override
     public List<Consultas> listarTodas() {
-        return new ArrayList<>(consultas); // Agora os tipos são compatíveis
+        return new ArrayList<>(consultas);
+    }
+    @Override
+    public List<Consultas> consultar() {
+        return new ArrayList<>(consultas);
     }
 }
